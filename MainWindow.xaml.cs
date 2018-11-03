@@ -46,12 +46,16 @@ namespace test02
             Generate.map = new int[5, 5];
 
             Objects.Vector2D start = new Objects.Vector2D(0, 0);
-            Objects.Vector2D end = new Objects.Vector2D(4, 4);
+            Objects.Vector2D end = new Objects.Vector2D(4, 2);
 
-            Funcs.Print(start != end);
+            //Funcs.Print(start == end);
 
-            //var path = PathFinder.GetPath(Generate.map, start, end);
-            //Funcs.Print(path[0]);
+            var path = PathFinder.GetPath(Generate.map, start, end);
+            
+            foreach (Objects.Vector2D point in path)
+            {
+                Funcs.Print(point);
+            }
         }
 
         public void Init()

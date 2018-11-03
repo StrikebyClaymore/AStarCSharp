@@ -53,11 +53,11 @@ namespace test02
             }
             public static bool operator !=(Vector2D obj1, Vector2D obj2)
             {
-                return !(obj1.x == obj2.x) && (obj1.x == obj2.y);
+                return !((obj1.x == obj2.x) && (obj1.x == obj2.y));
             }
             public static bool operator ==(Vector2D obj1, Vector2D obj2)
             {
-                return (obj1.x == obj2.x) && (obj1.x == obj2.y);
+                return ((obj1.x == obj2.x) && (obj1.y == obj2.y));
             }
         }
 
