@@ -23,6 +23,8 @@ namespace test02
             Objects.objects.Add(Global.player);
             Objects.Monster m = new Objects.Monster(32, 320);
             Objects.objects.Add(m);
+            m = new Objects.Monster(512, 128);
+            Objects.objects.Add(m);
             for (int y = 0; y < Convert.ToInt32(Global.canvas.Height)/ts; y++)
             {
                 for (int x = 0; x < Convert.ToInt32(Global.canvas.Width)/ts; x++)
@@ -37,7 +39,6 @@ namespace test02
                         }
                         Objects.Wall w = new Objects.Wall(x * ts, y * ts);
                         Objects.objects.Add(w);
-                        map[x, y] = 3;
                         continue;
                     }
                     Objects.EarthFloor e = new Objects.EarthFloor(x*ts, y*ts);

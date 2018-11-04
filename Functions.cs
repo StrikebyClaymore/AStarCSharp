@@ -155,5 +155,17 @@ namespace test02
         {
             return Convert.ToInt32(point.y * Generate.map.GetLength(0) + point.x);
         }
+
+        internal static void LockMapCell(Objects.Vector2D pos, int type)
+        {
+            var point = MapToCell(GlobalToMap(pos));
+            Generate.map[Convert.ToInt32(point.x), Convert.ToInt32(point.y)] = type;
+        }
+
+        internal static void OpenMapCell(Objects.Vector2D pos)
+        {
+            var point = MapToCell(GlobalToMap(pos));
+            Generate.map[Convert.ToInt32(point.x), Convert.ToInt32(point.y)] = 0;
+        }
     }
 }

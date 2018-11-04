@@ -52,14 +52,12 @@ namespace test02
             openSet.Add(startCell);
             while (openSet.Count > 0)
             {
-                var currentCell = openSet.OrderBy(Cell =>
-                  Cell.EstimateFullPathLength).First();
+                var currentCell = openSet.OrderBy(Cell => Cell.EstimateFullPathLength).First();
                 // Шаг 4.
-                if (currentCell.position == goal)
-                    return GetPathForCell(currentCell);
+                if (currentCell.position == goal) return GetPathForCell(currentCell);
                 openSet.Remove(currentCell);
                 closedSet.Add(currentCell);
-                foreach (var neighbourCell in GetNeighbours(currentCell, goal, field))
+                foreach (var neighbourCell in GetNeighbours(currentCell, goal, start, field))
                 {
                     if (closedSet.Count(Cell => Cell.position == neighbourCell.position) > 0)
                         continue;
@@ -88,28 +86,36 @@ namespace test02
             return Convert.ToInt32(Math.Abs(from.x - to.x) + Math.Abs(from.y - to.y));
         }
 
-        private static Collection<Cell> GetNeighbours(Cell Cell,
-          Objects.Vector2D goal, int[,] field)
+        private static Collection<Cell> GetNeighbours(Cell Cell, Objects.Vector2D goal, Objects.Vector2D start, int[,] field)
         {
             var result = new Collection<Cell>();
 
             // Соседними точками являются соседние по стороне клетки.
-            Objects.Vector2D[] Vectors = new Objects.Vector2D[4];
+            Objects.Vector2D[] Vectors = new Objects.Vector2D[8];
             Vectors[0] = new Objects.Vector2D(Cell.position.x + 1, Cell.position.y);
             Vectors[1] = new Objects.Vector2D(Cell.position.x - 1, Cell.position.y);
             Vectors[2] = new Objects.Vector2D(Cell.position.x, Cell.position.y + 1);
             Vectors[3] = new Objects.Vector2D(Cell.position.x, Cell.position.y - 1);
 
+            Vectors[4] = new Objects.Vector2D(Cell.position.x + 1, Cell.position.y + 1);
+            Vectors[5] = new Objects.Vector2D(Cell.position.x + 1, Cell.position.y - 1);
+            Vectors[6] = new Objects.Vector2D(Cell.position.x - 1, Cell.position.y + 1);
+            Vectors[7] = new Objects.Vector2D(Cell.position.x - 1, Cell.position.y - 1);
+
             foreach (var vector in Vectors)
             {
+                int x = Convert.ToInt32(vector.x);
+                int y = Convert.ToInt32(vector.y);
                 // Проверяем, что не вышли за границы карты.
-                if (vector.x < 0 || vector.x >= field.GetLength(0))
-                    continue;
-                if (vector.y < 0 || vector.y >= field.GetLength(1))
-                    continue;
+                if (x < 0 || x >= field.GetLength(0)) continue;
+                if (y < 0 || y >= field.GetLength(1)) continue;
                 // Проверяем, что по клетке можно ходить.
-                if ((field[Convert.ToInt32(vector.x), Convert.ToInt32(vector.y)] != 0) && (field[Convert.ToInt32(vector.x), Convert.ToInt32(vector.y)] != 1))
-                    continue;
+                if ((field[x, y] != 0) && (field[x, y] != 9)) continue;
+                // Проверка диагоналей.
+                if (vector == Cell.position + new Objects.Vector2D(1, 1) && (field[x - 1, y] != 0 || field[x, y - 1] != 0)) continue;
+                if (vector == Cell.position + new Objects.Vector2D(-1, 1) && (field[x + 1, y] != 0 || field[x, y - 1] != 0)) continue;
+                if (vector == Cell.position + new Objects.Vector2D(1, -1) && (field[x - 1, y] != 0 || field[x, y + 1] != 0)) continue;
+                if (vector == Cell.position + new Objects.Vector2D(-1, -1) && (field[x + 1, y] != 0 || field[x, y + 1] != 0)) continue;
                 // Заполняем данные для точки маршрута.
                 var neighbourCell = new Cell()
                 {

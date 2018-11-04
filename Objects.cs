@@ -152,6 +152,7 @@ namespace test02
             public Vector2D position = new Vector2D();
             public Image image = new Image();
             public int zIdx = 0;
+            public int type = 0;
             public CollisionShape shape;
             public List<string> groups = new List<string> { };
 
@@ -159,6 +160,7 @@ namespace test02
             {
                 this.position.x = Convert.ToDouble(_x);
                 this.position.y = Convert.ToDouble(_y);
+                Funcs.LockMapCell(this.position, this.type);
             }
 
             public Vector2D GetPosition()
@@ -177,12 +179,14 @@ namespace test02
             {
                 if (shape.colliding.Count == 0)
                 {
+                    Funcs.OpenMapCell(position);
                     position.x += vel.x;
                     position.y += vel.y;
                     shape.position = position;
                     Global.UpdateCanvas(image, position, zIdx);
+                    Funcs.LockMapCell(position, type);
                 }
-                if (shape.colliding.Count > 0)
+                else if (shape.colliding.Count > 0)
                 {
                     int count = 0;
                     for (int i = 0; i < shape.colliding.Count; i++)
@@ -199,10 +203,12 @@ namespace test02
                     }
                     if (count == shape.colliding.Count)
                     {
+                        Funcs.OpenMapCell(position);
                         position.x += vel.x;
                         position.y += vel.y;
                         shape.position = position;
                         Global.UpdateCanvas(image, position, zIdx);
+                        Funcs.LockMapCell(position, type);
                     }
                 }
             }
@@ -234,6 +240,7 @@ namespace test02
                 this.image.Source = new BitmapImage(new Uri("C:/Users/True/Desktop/code/projects/c#/test02/test02/imgs/earth.png", UriKind.RelativeOrAbsolute));
                 this.name = "EarthFloor";
                 zIdx = 1;
+                this.type = 0;
                 FirstInit(Convert.ToDouble(_x), Convert.ToDouble(_y));
                 this.shape = new RectangleShape(32, 32, false)
                 {
@@ -258,6 +265,7 @@ namespace test02
                 this.image.Source = new BitmapImage(new Uri("C:/Users/True/Desktop/code/projects/c#/test02/test02/imgs/stoneWall.png", UriKind.RelativeOrAbsolute));
                 this.name = "Wall";
                 zIdx = 2;
+                this.type = 3;
                 FirstInit(Convert.ToDouble(_x), Convert.ToDouble(_y));
                 this.shape = new RectangleShape(32, 32, true)
                 {
@@ -286,6 +294,7 @@ namespace test02
                 this.name = "Player";
                 this.groups.Add("MobTarget");
                 zIdx = 10;
+                this.type = 9;
                 FirstInit(Convert.ToDouble(_x), Convert.ToDouble(_y));
                 this.shape = new RectangleShape(32, 32, true)
                 {
@@ -301,11 +310,10 @@ namespace test02
         public class Monster: KinematicObjects
         {
             public int step = 32;
-            public int stepTime = 300;
+            public int stepTime = 600;
             public PhysicsObjects target;
             public int searchRange = 10;
             public bool life = false;
-
             public enum Status { Stay, Move, Fight }
             public Status status = Status.Stay;
 
@@ -324,6 +332,7 @@ namespace test02
                 this.image.Source = new BitmapImage(new Uri("C:/Users/True/Desktop/code/projects/c#/test02/test02/imgs/enemy.png", UriKind.RelativeOrAbsolute));
                 this.name = "Monster";
                 this.zIdx = 9;
+                this.type = 5;
                 FirstInit(Convert.ToDouble(_x), Convert.ToDouble(_y));
                 this.shape = new RectangleShape(32, 32, true)
                 {
@@ -331,6 +340,7 @@ namespace test02
                 };
                 InitObject(this.image, this.position, this.zIdx);
                 this.life = true;
+                this.shape.Monitoring(this);
                 AI();
             }
 
@@ -350,22 +360,32 @@ namespace test02
                 {
                     await Task.Delay(stepTime);
                     MoveAndCollide((path[1] - path[0])*step);
+                    //var point = path[1] - path[0];
+                    //Generate.map[Convert.ToInt32(point.x), Convert.ToInt32(point.y)] = 5;
                     path.Remove(path[0]);
                     var newPath = PathFinder.GetPath(Generate.map, Funcs.GlobalToMap(Funcs.MapToCell(position)), Funcs.GlobalToMap(Funcs.MapToCell(target.position)));
+                    if (newPath == null)
+                    {
+                        path.Clear();
+                        status = Status.Stay;
+                        break;
+                    }
                     if (newPath.Count <= searchRange) path = newPath;
                 }
-                status = Status.Stay;
                 path.Clear();
+                status = Status.Stay;
             }
 
             public async Task FindTarget()
             {
                 await Task.Delay(1);
+
                 foreach (PhysicsObjects trg in objects)
                 {
                     if (trg.groups.Contains("MobTarget"))
                     {
                         var newPath = PathFinder.GetPath(Generate.map, Funcs.GlobalToMap(Funcs.MapToCell(position)), Funcs.GlobalToMap(Funcs.MapToCell(trg.position)));
+                        if (newPath == null) continue;
                         if (newPath.Count >= searchRange) continue;
                         if (this.path.Count == 0)
                         {
