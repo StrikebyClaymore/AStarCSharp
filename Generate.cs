@@ -12,9 +12,16 @@ namespace test02
 
         internal static int[,] map;
 
+        internal static void Init()
+        {
+            map = new int[Convert.ToInt32(Global.canvas.Width / Generate.ts), Convert.ToInt32(Global.canvas.Height / Generate.ts)];
+        }
+
         internal static void GenerateMap()
         {
-            Objects.Monster m = new Objects.Monster(256+64, 128);
+            Global.player = new Objects.Player(256, 256);
+            Objects.objects.Add(Global.player);
+            Objects.Monster m = new Objects.Monster(32, 320);
             Objects.objects.Add(m);
             for (int y = 0; y < Convert.ToInt32(Global.canvas.Height)/ts; y++)
             {
@@ -30,6 +37,7 @@ namespace test02
                         }
                         Objects.Wall w = new Objects.Wall(x * ts, y * ts);
                         Objects.objects.Add(w);
+                        map[x, y] = 3;
                         continue;
                     }
                     Objects.EarthFloor e = new Objects.EarthFloor(x*ts, y*ts);

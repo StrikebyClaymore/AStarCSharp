@@ -7,8 +7,8 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="640" Width="960">
     <Grid Name="MyGrid">
-        <Canvas Name="MyCanvas" Panel.ZIndex="-1" Background="LightBlue" Width="960" Height="640">
-            <ScrollViewer Height="96" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Visible" Canvas.Top="533" Canvas.Left="27" Width="907">
+        <Canvas Name="MyCanvas" Panel.ZIndex="0" Background="LightBlue" Width="960" Height="640">
+            <ScrollViewer Panel.ZIndex="100" Height="96" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Visible" Canvas.Top="533" Canvas.Left="27" Width="907">
                 <TextBlock Name="MyConsole" Panel.ZIndex="100" TextWrapping="Wrap" Background="AliceBlue" Width="940" Canvas.Top="533" Canvas.Left="10"/>
             </ScrollViewer>
         </Canvas>

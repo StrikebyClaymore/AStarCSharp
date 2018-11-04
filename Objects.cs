@@ -51,13 +51,31 @@ namespace test02
             {
                 return this.ToString().GetHashCode();
             }
-            public static bool operator !=(Vector2D obj1, Vector2D obj2)
-            {
-                return !((obj1.x == obj2.x) && (obj1.x == obj2.y));
-            }
             public static bool operator ==(Vector2D obj1, Vector2D obj2)
             {
+                if (obj1 is null && obj2 is null) return true;
+                else if (obj2 is null) return false;
+                else return ((obj1.x == obj2.x) && (obj1.y == obj2.y));
+            }
+            public static bool operator !=(Vector2D obj1, Vector2D obj2)
+            {   
                 return ((obj1.x == obj2.x) && (obj1.y == obj2.y));
+            }
+            public static Vector2D operator +(Vector2D obj1, Vector2D obj2)
+            {
+                return new Vector2D((obj1.x + obj2.x), (obj1.y + obj2.y));
+            }
+            public static Vector2D operator -(Vector2D obj1, Vector2D obj2)
+            {
+                return new Vector2D((obj1.x - obj2.x), (obj1.y - obj2.y));
+            }
+            public static Vector2D operator *(Vector2D obj1, int i)
+            {
+                return new Vector2D(obj1.x*i, obj1.y*i);
+            }
+            public static Vector2D operator /(Vector2D obj1, int i)
+            {
+                return new Vector2D(obj1.x / i, obj1.y / i);
             }
         }
 
@@ -135,6 +153,7 @@ namespace test02
             public Image image = new Image();
             public int zIdx = 0;
             public CollisionShape shape;
+            public List<string> groups = new List<string> { };
 
             public void FirstInit(double _x, double _y)
             {
@@ -152,6 +171,40 @@ namespace test02
             public KinematicObjects()
             {
                 this.name = "KinematicObjects";
+            }
+
+            public void MoveAndCollide(Vector2D vel)
+            {
+                if (shape.colliding.Count == 0)
+                {
+                    position.x += vel.x;
+                    position.y += vel.y;
+                    shape.position = position;
+                    Global.UpdateCanvas(image, position, zIdx);
+                }
+                if (shape.colliding.Count > 0)
+                {
+                    int count = 0;
+                    for (int i = 0; i < shape.colliding.Count; i++)
+                    {
+                        if (Funcs.CheckIncludes(shape.position, shape.size, shape.colliding[i].shape.position, shape.colliding[i].shape.size, vel))
+                        {
+                            count++;
+                        }
+                        else
+                        {
+                            Funcs.Print(Convert.ToString(this.name + " collide with " + shape.colliding.Count + shape.colliding[i].name + " "));
+                            break;
+                        }
+                    }
+                    if (count == shape.colliding.Count)
+                    {
+                        position.x += vel.x;
+                        position.y += vel.y;
+                        shape.position = position;
+                        Global.UpdateCanvas(image, position, zIdx);
+                    }
+                }
             }
         }
 
@@ -217,7 +270,7 @@ namespace test02
         // <Mobs>
         public class Player : KinematicObjects
         {
-            public int speed = 32;
+            public int step = 32;
 
             public Player()
             {
@@ -231,6 +284,7 @@ namespace test02
             {
                 this.image.Source = new BitmapImage(new Uri("C:/Users/True/Desktop/code/projects/c#/test02/test02/imgs/player.png", UriKind.RelativeOrAbsolute));
                 this.name = "Player";
+                this.groups.Add("MobTarget");
                 zIdx = 10;
                 FirstInit(Convert.ToDouble(_x), Convert.ToDouble(_y));
                 this.shape = new RectangleShape(32, 32, true)
@@ -241,44 +295,21 @@ namespace test02
                 this.shape.Monitoring(this);
             }
 
-            public void MoveAndCollide(Vector2D vel)
-            {
-                if (shape.colliding.Count == 0)
-                {
-                    position.x += vel.x;
-                    position.y += vel.y;
-                    shape.position = position;
-                    Global.UpdateCanvas(image, position, zIdx);
-                }
-                if (shape.colliding.Count > 0)
-                {
-                    int count = 0;
-                    for (int i = 0; i < shape.colliding.Count; i++)
-                    {
-                        if (Funcs.CheckIncludes(shape.position, shape.size, shape.colliding[i].shape.position, shape.colliding[i].shape.size, vel))
-                        {
-                            count++;
-                        }
-                        else
-                        {
-                            Funcs.Print(Convert.ToString(shape.colliding.Count + shape.colliding[i].name + shape.colliding[i].shape.enabled));
-                            break;
-                        }
-                    }
-                    if (count == shape.colliding.Count)
-                    {
-                        position.x += vel.x;
-                        position.y += vel.y;
-                        shape.position = position;
-                        Global.UpdateCanvas(image, position, zIdx);
-                    }
-                }
-            }
+            
         }
 
         public class Monster: KinematicObjects
         {
-            public int speed = 16;
+            public int step = 32;
+            public int stepTime = 300;
+            public PhysicsObjects target;
+            public int searchRange = 10;
+            public bool life = false;
+
+            public enum Status { Stay, Move, Fight }
+            public Status status = Status.Stay;
+
+            public List<Vector2D> path = new List<Vector2D> { };
 
             public Monster()
             {
@@ -299,6 +330,56 @@ namespace test02
                     position = position
                 };
                 InitObject(this.image, this.position, this.zIdx);
+                this.life = true;
+                AI();
+            }
+
+            public async Task AI()
+            {
+                while (life)
+                {
+                    await Task.Delay(1);
+                    if (status == Status.Stay) await FindTarget();
+                    else if (status == Status.Move) await MoveToTarget();
+                }
+            }
+
+            public async Task MoveToTarget()
+            {
+                while (path.Count > 2)
+                {
+                    await Task.Delay(stepTime);
+                    MoveAndCollide((path[1] - path[0])*step);
+                    path.Remove(path[0]);
+                    var newPath = PathFinder.GetPath(Generate.map, Funcs.GlobalToMap(Funcs.MapToCell(position)), Funcs.GlobalToMap(Funcs.MapToCell(target.position)));
+                    if (newPath.Count <= searchRange) path = newPath;
+                }
+                status = Status.Stay;
+                path.Clear();
+            }
+
+            public async Task FindTarget()
+            {
+                await Task.Delay(1);
+                foreach (PhysicsObjects trg in objects)
+                {
+                    if (trg.groups.Contains("MobTarget"))
+                    {
+                        var newPath = PathFinder.GetPath(Generate.map, Funcs.GlobalToMap(Funcs.MapToCell(position)), Funcs.GlobalToMap(Funcs.MapToCell(trg.position)));
+                        if (newPath.Count >= searchRange) continue;
+                        if (this.path.Count == 0)
+                        {
+                            this.path = newPath;
+                            this.target = trg;
+                        }
+                        else if (newPath.Count < this.path.Count)
+                        {
+                            this.path = newPath;
+                            this.target = trg;
+                        }
+                    }
+                }
+                if (this.path.Count > 1) status = Status.Move;
             }
         }
 

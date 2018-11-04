@@ -39,37 +39,23 @@ namespace test02
         public Global()
         {
             InitializeComponent();
-            //Init();
 
-            canvas = MyCanvas;
-            console = MyConsole;
-            Generate.map = new int[5, 5];
+            Init();
 
-            Objects.Vector2D start = new Objects.Vector2D(0, 0);
-            Objects.Vector2D end = new Objects.Vector2D(4, 2);
+            //Objects.Vector2D vec1 = new Objects.Vector2D(3, 1);
+            //Objects.Vector2D vec2 = new Objects.Vector2D(4, 3);
 
-            //Funcs.Print(start == end);
+            //Funcs.Print(vec1.x >= vec2.x);
 
-            var path = PathFinder.GetPath(Generate.map, start, end);
-            
-            foreach (Objects.Vector2D point in path)
-            {
-                Funcs.Print(point);
-            }
         }
 
         public void Init()
         {
-            Generate.map = new int[Convert.ToInt32(Global.canvas.Height / Generate.ts), Convert.ToInt32(Global.canvas.Width / Generate.ts)];
             canvas = MyCanvas;
-            player = new Objects.Player(256, 256);
+            console = MyConsole;
+            Generate.Init();
             Generate.GenerateMap();
             status = true;
-
-            for (int i = 0; i < Objects.objects.Count; i++)
-            {
-                MyConsole.Text += Convert.ToString(Objects.objects[i].name + ", ");
-            }
         }
 
         internal static void UpdateCanvas(Image img, Objects.Vector2D pos, int zIdx)
@@ -90,19 +76,19 @@ namespace test02
                 base.OnKeyDown(e);
                 if (e.Key == Key.W)
                 {
-                    if (CanMove(player.position, 0)) { player.MoveAndCollide(new Objects.Vector2D(0, -player.speed)); }
+                    if (CanMove(player.position, 0)) { player.MoveAndCollide(new Objects.Vector2D(0, -player.step)); }
                 }
                 if (e.Key == Key.D)
                 {
-                    if (CanMove(player.position, 1)) { player.MoveAndCollide(new Objects.Vector2D(player.speed, 0)); }
+                    if (CanMove(player.position, 1)) { player.MoveAndCollide(new Objects.Vector2D(player.step, 0)); }
                 }
                 if (e.Key == Key.S)
                 {
-                    if (CanMove(player.position, 2)) { player.MoveAndCollide(new Objects.Vector2D(0, player.speed)); }
+                    if (CanMove(player.position, 2)) { player.MoveAndCollide(new Objects.Vector2D(0, player.step)); }
                 }
                 if (e.Key == Key.A)
                 {
-                    if (CanMove(player.position, 3)) { player.MoveAndCollide(new Objects.Vector2D(-player.speed, 0)); }
+                    if (CanMove(player.position, 3)) { player.MoveAndCollide(new Objects.Vector2D(-player.step, 0)); }
                 }
             }
         }

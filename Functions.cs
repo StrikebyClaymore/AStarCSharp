@@ -135,5 +135,25 @@ namespace test02
             }
             return ((pos1.x + vec.x < pos2.x) || (pos1.x + vec.x > pos2.x) || ((pos1.x + vec.x >= pos2.x && pos1.x + vec.x <= pos2.x) && (pos1.y + vec.y < pos2.y || pos1.y + vec.y > pos2.y)));
         }
+
+        internal static Objects.Vector2D GlobalToMap(Objects.Vector2D pos)
+        {
+            return new Objects.Vector2D(Math.Floor(pos.x), Math.Floor(pos.y));
+        }
+
+        internal static Objects.Vector2D MapToCell(Objects.Vector2D pos)
+        {
+            return new Objects.Vector2D(pos.x/Generate.ts, pos.y/Generate.ts);
+        }
+
+        internal static Objects.Vector2D CellToMap(Objects.Vector2D point)
+        {
+            return new Objects.Vector2D(point.x*32, point.y*32);
+        }
+
+        internal static int GetCellIndex(Objects.Vector2D point)
+        {
+            return Convert.ToInt32(point.y * Generate.map.GetLength(0) + point.x);
+        }
     }
 }
