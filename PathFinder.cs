@@ -53,7 +53,7 @@ namespace test02
             while (openSet.Count > 0)
             {
                 var currentCell = openSet.OrderBy(Cell => Cell.EstimateFullPathLength).First();
-                // Шаг 4.
+                
                 if (currentCell.position == goal) return GetPathForCell(currentCell);
                 openSet.Remove(currentCell);
                 closedSet.Add(currentCell);
