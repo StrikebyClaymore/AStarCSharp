@@ -26,15 +26,15 @@ namespace test02
     {
         public class Cell
         {
-            // Координаты точки на карте.
+            // Координаты точки.
             public Objects.Vector2D position;
-            // Длина пути от старта (G).
+            // Длина пути от старта.
             public int PathLengthFromStart { get; set; }
-            // Точка, из которой пришли в эту точку.
+            // Точка из которой пришли в эту точку.
             public Cell cameFrom;
-            // Примерное расстояние до цели (H).
+            // Расстояние до цели.
             public int HeuristicEstimatePathLength { get; set; }
-            // Ожидаемое полное расстояние до цели (F).
+            // Ожидаемое полное расстояние до цели.
             public int EstimateFullPathLength{ get { return this.PathLengthFromStart + this.HeuristicEstimatePathLength; } }
         }
 
